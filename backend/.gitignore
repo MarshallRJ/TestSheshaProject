@@ -1,0 +1,16 @@
+/.vs/*
+**/*.suo
+**/*.user
+**/*.bak
+**/*.orig
+**/UpgradeLog.htm
+**/bin/*
+**/obj/*
+**/App_Data/Logs/*
+**/ElmahLogs/*
+Logs
+/src/test.TestProject.Web.Host/web.config
+/src/test.TestProject.Web.Host/test.TestProject.Web.Core.xml
+/sh.exe.stackdump
+
+
