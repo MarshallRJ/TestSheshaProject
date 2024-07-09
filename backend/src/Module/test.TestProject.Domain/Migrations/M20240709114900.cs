@@ -17,7 +17,7 @@ namespace Boxfusion.Membership.Common.Domain.Migrations
         public override void Up()
         {
             Alter.Table("Core_Persons")
-               .AddColumn("Mem_MembershipStatusLkp").AsInt64().Nullable();
+               .AddColumn("TP_MembershipStatusesLkp").AsInt64().Nullable();
         }
         /// <summary>
         /// Code to execute when rolling back the migration

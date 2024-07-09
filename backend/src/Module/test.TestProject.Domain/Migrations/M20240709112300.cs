@@ -19,12 +19,12 @@ public class M20240709112300 : Migration
     public override void Up()
     {
         Alter.Table("Core_Persons")
-            .AddColumn("Mem_MembershipNumber").AsString().Nullable()
-            .AddColumn("Mem_ResidentialAddress").AsString().Nullable()
-            .AddForeignKeyColumn("Mem_RegionId", "Core_Areas").Nullable()
-            .AddForeignKeyColumn("Mem_BranchId", "Core_Areas").Nullable()
-            .AddColumn("Mem_MembershipStartDate").AsDateTime().Nullable()
-            .AddColumn("Mem_MembershipEndDate").AsDateTime().Nullable();
+            .AddColumn("TP_MembershipNumber").AsString().Nullable()
+            .AddColumn("TP_ResidentialAddress").AsString().Nullable()
+            .AddForeignKeyColumn("TP_RegionId", "Core_Areas").Nullable()
+            .AddForeignKeyColumn("TP_BranchId", "Core_Areas").Nullable()
+            .AddColumn("TP_MembershipStartDate").AsDateTime().Nullable()
+            .AddColumn("TP_MembershipEndDate").AsDateTime().Nullable();
     }
     /// <summary>
     /// Code to execute when rolling back the migration
