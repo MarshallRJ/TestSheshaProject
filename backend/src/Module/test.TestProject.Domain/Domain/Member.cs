@@ -47,6 +47,6 @@ namespace Boxfusion.Membership.Common.Domain.Domain
         [NotMapped]
         public virtual StoredFile IdDocument { get; set; }
 
-        public virtual RefListMembershipStatuses? MembershipStatuses { get; set; }
+        public virtual RefListMembershipStatuses? MembershipStatus { get; set; }
     }
 }
