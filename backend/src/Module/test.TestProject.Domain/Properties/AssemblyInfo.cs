@@ -20,5 +20,5 @@ using Shesha.Attributes;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("541f6f3c-1e7f-4ded-9807-12ea3ec7a650")]
 
-[assembly: TablePrefix("TestProject_")]
+[assembly: TablePrefix("TP_")]
 [assembly: IntentTemplate("Boxfusion.Modules.Domain.Properties", Version = "1.0")]
