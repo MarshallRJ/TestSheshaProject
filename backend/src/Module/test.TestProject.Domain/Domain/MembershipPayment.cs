@@ -1,4 +1,5 @@
-﻿using Abp.Domain.Entities.Auditing;
+﻿using Abp.Domain.Entities;
+using Abp.Domain.Entities.Auditing;
 using Boxfusion.Membership.Common.Domain.Domain;
 using Shesha.Domain.Attributes;
 using System;

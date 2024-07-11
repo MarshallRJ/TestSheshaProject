@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 namespace Boxfusion.Membership.Common.Domain.Migrations
 {
     [Migration(20240709150100)]
