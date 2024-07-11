@@ -7,6 +7,8 @@ using Shesha;
 using Shesha.DynamicEntities.Dtos;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+
 
 namespace Boxfusion.Membership.Common.Services
 {
@@ -42,6 +44,35 @@ namespace Boxfusion.Membership.Common.Services
             var updatedMember = await _memberRepo.UpdateAsync(member);
 
             return await MapToDynamicDtoAsync<Member, Guid>(updatedMember);
+        }
+
+        [HttpPut, Route("[action]")]
+        public async Task<IEnumerable<DynamicDto<Member, Guid>>> ActivateMemberships(List<Guid> memberIds)
+        {
+            var res = new List<DynamicDto<Member, Guid>>();
+            var errorList = new List<string>();
+            foreach (var memberId in memberIds) 
+            {
+                try
+                {
+                    var dtoMember = await ActivateMembership(memberId);
+
+                    res.Add(dtoMember);
+                }
+                catch (Exception kk)
+                {
+
+                    errorList.Add(kk.Message);
+                }
+                
+            }
+
+            if (errorList.Count > 0)
+            {
+                throw new UserFriendlyException("Error Activating accounts " + string.Join(Environment.NewLine,errorList) );
+            }
+
+            return res;
         }
     }
 }
