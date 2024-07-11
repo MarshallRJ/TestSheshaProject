@@ -11,6 +11,7 @@ using Azure;
 using Abp.Specifications;
 using System.Linq.Expressions;
 using Shesha.Specifications;
+using Abp.Domain.Repositories;
 
 namespace Boxfusion.Membership.Common.Domain.Domain
 {
@@ -85,6 +86,19 @@ namespace Boxfusion.Membership.Common.Domain.Domain
         {
             //return c => c.IsCurrent;
             return c=> c.MembershipEndDate > DateTime.Now;
+        }
+    }
+
+    public class IsUserMemberSameOrganisationsUser : ShaSpecification<Member>
+    {
+        public override Expression<Func<Member, bool>> BuildExpression()
+        {
+            var personService = IocManager.Resolve<IRepository<Person,Guid>>();
+            var currentPerson = personService.GetAll().FirstOrDefault(p => p.User != null && p.User.Id == AbpSession.UserId);
+
+            
+
+            return c => currentPerson.PrimaryOrganisation == c.PrimaryOrganisation;
         }
     }
 
