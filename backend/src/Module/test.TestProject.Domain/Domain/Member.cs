@@ -7,14 +7,31 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations.Schema;
 using Boxfusion.Membership.Common.Domain.Enums;
+using Azure;
+using Abp.Specifications;
+using System.Linq.Expressions;
+using Shesha.Specifications;
 
 namespace Boxfusion.Membership.Common.Domain.Domain
 {
 
-    // <summary>
-    /// A person within the application that is a Member
-    /// </summary>
-    [Entity(TypeShortAlias = "TP.Member")]
+    [Entity(TypeShortAlias = "TP.CurrentAccount")]
+    public class CurrentAccount : Account
+    {
+        [NotMapped]
+        public bool IsCurrent
+        {
+            get
+            {
+                return true;
+            }
+        }
+    }
+
+        // <summary>
+        /// A person within the application that is a Member
+        /// </summary>
+        [Entity(TypeShortAlias = "TP.Member")]
     public class Member : Person
     {
         /// <summary>
@@ -48,5 +65,30 @@ namespace Boxfusion.Membership.Common.Domain.Domain
         public virtual StoredFile IdDocument { get; set; }
 
         public virtual RefListMembershipStatuses? MembershipStatus { get; set; }
+
+        /// <summary>
+        /// Specifies the remaining capacity. Calculated column based on: Capacity less SUM of all Active appointments.
+        /// </summary>
+        [NotMapped]
+        public bool IsCurrent
+        {
+            get
+            {
+                return MembershipEndDate > DateTime.Now;
+            }
+        }
     }
+
+    public class IsMembershipCurrentSpecification : ShaSpecification<Member>
+    {
+        public override Expression<Func<Member, bool>> BuildExpression()
+        {
+            //return c => c.IsCurrent;
+            return c=> c.MembershipEndDate > DateTime.Now;
+        }
+    }
+
+
+
+
 }
