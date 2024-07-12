@@ -7,6 +7,8 @@ using Intent.RoslynWeaver.Attributes;
 using Shesha;
 using Shesha.Authorization;
 using Shesha.Modules;
+using test.Locations;
+using test.Locations.Module;
 
 [assembly: DefaultIntentManaged(Mode.Fully)]
 [assembly: IntentTemplate("Boxfusion.Modules.Domain.Module", Version = "1.0")]
@@ -18,6 +20,7 @@ namespace test.TestProject.Domain
     /// TestProjectCommon Module
     /// </summary>
     [DependsOn(
+        typeof(LocationModule),
         typeof(SheshaCoreModule),
         typeof(SheshaApplicationModule)
     )]

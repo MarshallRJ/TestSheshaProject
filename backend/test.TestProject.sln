@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.TestProject.Domain", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.TestProject.Application", "src\Module\test.TestProject.Application\test.TestProject.Application.csproj", "{CDBB7196-2532-4E94-9EAF-7DA7BC32C0D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test.Locations.Module", "test.Locations.Module\test.Locations.Module.csproj", "{46EBAE69-1DB9-4518-A213-DEBDB2267599}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,12 @@ Global
 		{CDBB7196-2532-4E94-9EAF-7DA7BC32C0D2}.DebugLocalShesha|Any CPU.Build.0 = Debug|Any CPU
 		{CDBB7196-2532-4E94-9EAF-7DA7BC32C0D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDBB7196-2532-4E94-9EAF-7DA7BC32C0D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46EBAE69-1DB9-4518-A213-DEBDB2267599}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46EBAE69-1DB9-4518-A213-DEBDB2267599}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46EBAE69-1DB9-4518-A213-DEBDB2267599}.DebugLocalShesha|Any CPU.ActiveCfg = Debug|Any CPU
+		{46EBAE69-1DB9-4518-A213-DEBDB2267599}.DebugLocalShesha|Any CPU.Build.0 = Debug|Any CPU
+		{46EBAE69-1DB9-4518-A213-DEBDB2267599}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46EBAE69-1DB9-4518-A213-DEBDB2267599}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
