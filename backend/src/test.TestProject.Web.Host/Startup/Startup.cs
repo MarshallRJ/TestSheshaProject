@@ -150,6 +150,7 @@ namespace test.TestProject.Web.Host.Startup
 			app.UseAbp(options =>
 			{
 				options.UseAbpRequestLocalization = false;
+
 			}); // Initializes ABP framework.​
 				//app.UseCors(_defaultCorsPolicyName); // Enable CORS!
 				// global cors policy

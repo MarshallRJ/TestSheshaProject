@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace test.TestProject.Web.Host.Startup
 {
-    public class Program
+    public partial class Program
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            CreateWebHostBuilder(args).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args)
+        public static IWebHost CreateWebHostBuilder(string[] args)
         {
             return WebHost.CreateDefaultBuilder(args)
                 .CaptureStartupErrors(true)

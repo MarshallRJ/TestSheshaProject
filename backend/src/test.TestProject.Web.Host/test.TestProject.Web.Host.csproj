@@ -19,6 +19,9 @@
   <ItemGroup>
     <Content Remove="wwwroot\swagger\ui\index.html" />
   </ItemGroup>
+  <ItemGroup>
+     <InternalsVisibleTo Include="TestProject1" />
+</ItemGroup>
 
   <ItemGroup>
     <None Include="app.config" />
