@@ -403,6 +403,23 @@ namespace TestProject1
         {
             _factory = factory;
         }
+
+        public async Task<Guid> AddVehicle(HttpClient client, string reg, string make, string model, int year)
+        {
+            var response = await client.PostAsJsonAsync<VehicleAdd>("/api/dynamic/test.TestProject/Vehicle/Crud/Create", new VehicleAdd { registrationNumber = reg, make = make, model = model, year = year });
+
+            if (response.IsSuccessStatusCode)
+            {
+                string responseStream = await response.Content.ReadAsStringAsync();
+                EntityAddResponse res = await response.Content.ReadFromJsonAsync<EntityAddResponse>();
+                //set the header as the logged in token
+
+                return res.result.Id;
+            }
+            var errorStream = await response.Content.ReadAsStringAsync();
+
+            throw new Exception($"Create Vehicle failed: {errorStream}");
+        }
         public SheshTestHelper GetSheshTestHelper()
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -470,22 +487,7 @@ namespace TestProject1
         public VehicleTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
         {
         }
-        public async Task<Guid> AddVehicle(HttpClient client, string reg, string make, string model, int year)
-        {
-            var response = await client.PostAsJsonAsync<VehicleAdd>("/api/dynamic/test.TestProject/Vehicle/Crud/Create", new VehicleAdd { registrationNumber = reg, make = make, model = model, year = year });
-
-            if (response.IsSuccessStatusCode)
-            {
-                string responseStream = await response.Content.ReadAsStringAsync();
-                EntityAddResponse res = await response.Content.ReadFromJsonAsync<EntityAddResponse>();
-                //set the header as the logged in token
-               
-                return res.result.Id;
-            }
-            var errorStream = await response.Content.ReadAsStringAsync();
-
-            throw new Exception($"Create Vehicle failed: {errorStream}");
-        }
+        
         [Fact]
         public async Task AddVehicleHappyLine()
         {
@@ -584,4 +586,54 @@ namespace TestProject1
             Assert.False(passed);
         }
     }
-}
+
+    public class ReservationTests : IntegrationTestBase
+    {
+        public ReservationTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
+        {
+        }
+
+        public async Task<Guid> ReserveVehicle(HttpClient client, Guid vehichileId, DateTime from, DateTime to)
+        {
+            //var response = await client.PostAsJsonAsync<VehicleAdd>("/api/dynamic/test.TestProject/Vehicle/Crud/Create", new VehicleAdd { registrationNumber = reg, make = make, model = model, year = year });
+
+            //if (response.IsSuccessStatusCode)
+            //{
+            //    string responseStream = await response.Content.ReadAsStringAsync();
+            //    EntityAddResponse res = await response.Content.ReadFromJsonAsync<EntityAddResponse>();
+            //    //set the header as the logged in token
+
+            //    return res.result.Id;
+            //}
+            //var errorStream = await response.Content.ReadAsStringAsync();
+
+            //throw new Exception($"Create Vehicle failed: {errorStream}");
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public async Task ReserveVehicleHappyLine()
+        {
+            this.CleanAll();
+            var coreHelper = GetCoreTestHelper();
+            var server = coreHelper.CreateServer();
+
+            var client = server.CreateClient();
+
+            var token = await coreHelper.LoginWithToken(client, _adminUser, _adminPass);
+
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            //add a test vechile
+            var id = await AddVehicle(client, "reg123", "BMW", "320i", 2016);
+
+            var resrvationId = await ReserveVehicle(client, id, new DateTime(2001, 12, 1), new DateTime(2001, 12, 2));
+
+            client.Dispose();
+
+            Assert.NotNull(resrvationId);
+            Assert.NotEqual(Guid.Empty, id);
+        }
+    }
+ }
