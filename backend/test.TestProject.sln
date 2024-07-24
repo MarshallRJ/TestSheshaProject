@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.TestProject.Applicatio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.Locations.Module", "test.Locations.Module\test.Locations.Module.csproj", "{46EBAE69-1DB9-4518-A213-DEBDB2267599}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "test\TestProject1\TestProject1.csproj", "{A75578A0-16DD-4C29-AC27-C125CC3D5ACB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestProject1", "test\TestProject1\TestProject1.csproj", "{A75578A0-16DD-4C29-AC27-C125CC3D5ACB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

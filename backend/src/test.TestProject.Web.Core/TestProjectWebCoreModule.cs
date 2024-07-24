@@ -32,7 +32,8 @@ namespace test.TestProject
         typeof(SheshaClickatellModule),
         typeof(TestProjectModule),
         typeof(TestProjectApplicationModule)
-	 )]
+        //typeof(AbpFluentValidationModule)
+     )]
     public class TestProjectWebCoreModule : AbpModule
     {
         private readonly IConfigurationRoot _appConfiguration;

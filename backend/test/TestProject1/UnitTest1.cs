@@ -18,6 +18,7 @@ using NHibernate.Mapping;
 using Microsoft.SqlServer.Management;
 using Microsoft.SqlServer.Management.Sdk.Sfc;
 using Microsoft.SqlServer.Management.Smo;
+using DocumentFormat.OpenXml.EMMA;
 
 
 namespace TestProject1
@@ -28,10 +29,30 @@ namespace TestProject1
         public string userNameOrEmailAddress { get; set; }
         public string password { get; set; }
     }
-    
+
+    public class VehicleAdd
+    {
+        public string registrationNumber { get; set; }
+        public string make { get; set; }
+
+        public string model { get; set; }
+
+        public int year { get; set; }
+    }
+
     public class TokenResponse
     {
         public TokenContainer result { get; set; }
+    }
+
+    public class EntityAddResponse
+    {
+        public EntityAddContainer result { get; set; }
+    }
+
+    public class EntityAddContainer
+    {
+        public Guid Id { get; set; }
     }
 
     public class TokenContainer
@@ -43,9 +64,9 @@ namespace TestProject1
         public ProductTestServer(IWebHostBuilder builder) : base(builder)
         {
             //ProductContext = Host.Services.GetRequiredService<ProductContext>();
-           
-           
-            }
+
+
+        }
 
         //public ProductContext ProductContext { get; set; }
     }
@@ -61,12 +82,12 @@ namespace TestProject1
 
             System.Data.SqlClient.SqlConnectionStringBuilder builder = new System.Data.SqlClient.SqlConnectionStringBuilder(connectionString);
 
-           
+
             _dbName = builder.InitialCatalog;
 
             builder.InitialCatalog = "master";
 
-            _masterString = builder.ConnectionString;        
+            _masterString = builder.ConnectionString;
         }
 
 
@@ -81,8 +102,8 @@ namespace TestProject1
                 tmpConn = new SqlConnection(connectionString);
 
                 sqlCreateDBQuery = string.Format("SELECT database_id FROM sys.databases WHERE Name = '{0}'", databaseName);
-        
-        using (tmpConn)
+
+                using (tmpConn)
                 {
                     using (SqlCommand sqlCmd = new SqlCommand(sqlCreateDBQuery, tmpConn))
                     {
@@ -132,7 +153,7 @@ namespace TestProject1
 
         public void CleanDatabase()
         {
-            //ExecSQLCommand(_connectionString, $"Delet from ");
+            ExecSQLCommand(_connectionString, $"Delete from TP_Vehicles");
         }
 
         private void PopulateDatabase()
@@ -146,7 +167,7 @@ namespace TestProject1
             }
             return;
             StreamReader reader = new StreamReader(Directory.GetCurrentDirectory() + "\\CreatDatabse.sql");
-            
+
 
             string contents = reader.ReadToEnd();
             reader.Close();
@@ -163,13 +184,13 @@ namespace TestProject1
                 {
                     myCommand.ExecuteNonQuery();
                 }
-                catch (Exception kk) 
+                catch (Exception kk)
                 {
                     throw kk;
                 }
-                   
 
-               
+
+
             }
 
             if (myConn.State == ConnectionState.Open)
@@ -201,16 +222,16 @@ namespace TestProject1
         private void ExecSQLCommand(SqlConnection myConn, string sqlCommand)
         {
             SqlCommand myCommand = new SqlCommand(sqlCommand, myConn);
-           
-                myConn.Open();
-                myCommand.ExecuteNonQuery();
 
-           
+            myConn.Open();
+            myCommand.ExecuteNonQuery();
+
+
         }
 
-            private void ExecSQLCommand(string connectionString, string sqlCommand)
+        private void ExecSQLCommand(string connectionString, string sqlCommand)
         {
-            
+
             SqlConnection myConn = new SqlConnection(connectionString);
 
 
@@ -236,20 +257,14 @@ namespace TestProject1
             }
         }
     }
-    public class BasicTests
-    : IClassFixture<WebApplicationFactory<Program>>
+
+    public class CoreTestHelper
     {
-        public SheshTestHelper GetSheshTestHelper()
+        private ProductTestServer _server;
+        public ProductTestServer CreateServer()
         {
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-           .AddJsonFile("appsettings.json")
-           .Build();
-
-            return new SheshTestHelper(configuration.GetConnectionString("Default"));
-        }
-        public static ProductTestServer CreateServer()
-        {
-
+            if (_server!= null)
+                return _server;
             var configurationValues = new Dictionary<string, string>
         {
             { "MyConfigSetting", "Value" }
@@ -265,11 +280,11 @@ namespace TestProject1
                 .UseConfiguration(configuration)
                 .CaptureStartupErrors(true)
 
-                
+
                  .UseSetting("detailedErrors", "true")
                   .ConfigureAppConfiguration((context, configurationBuilder) =>
                   {
-                     
+
                       //configurationBuilder
                       //    //.SetBasePath(Directory.GetCurrentDirectory())
                       //    //.AddJsonFile("appsettings.Test.json", optional: false)
@@ -284,7 +299,7 @@ namespace TestProject1
                           FileProvider = new PhysicalFileProvider(Environment.CurrentDirectory)
                       });
 
-                      
+
 
 
                   })
@@ -292,34 +307,64 @@ namespace TestProject1
                   .UseStartup<Startup>();
 
 
-                //.Build();
+            //.Build();
 
             ProductTestServer testServer = new ProductTestServer(hostBuilder);
 
             //testServer.Host.MigrateDbContext<ProductContext>((_, __) => { });
+            _server = testServer;
 
             return testServer;
         }
-        private readonly WebApplicationFactory<Program> _factory;
 
-        public BasicTests(WebApplicationFactory<Program> factory)
+        public async Task<string> LoginWithToken(HttpClient client, string username, string password)
         {
-            _factory = factory;
-        }
-
-
-        private async Task<string> LoginWithToken(HttpClient client, string username, string password)
-        {
-            var response = await client.PostAsJsonAsync<TokenRequest>("/api/TokenAuth/Authenticate", new TokenRequest {userNameOrEmailAddress= username,password=password });
+            var response = await client.PostAsJsonAsync<TokenRequest>("/api/TokenAuth/Authenticate", new TokenRequest { userNameOrEmailAddress = username, password = password });
 
             if (response.IsSuccessStatusCode)
             {
                 string responseStream = await response.Content.ReadAsStringAsync();
                 TokenResponse res = await response.Content.ReadFromJsonAsync<TokenResponse>();
+                //set the header as the logged in token
+                
                 return res.result.accessToken;
             }
-            throw new Exception("Login failed");
+            var errorStream = await response.Content.ReadAsStringAsync();
+
+            throw new Exception($"Login failed: {errorStream}");
         }
+    }
+
+    public abstract class IntegrationTestBase
+    {
+        protected string _adminUser = "admin";
+        protected string _adminPass = "123qwe";
+        protected static CoreTestHelper _coreTestHelper;
+        public SheshTestHelper GetSheshTestHelper()
+        {
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+           .AddJsonFile("appsettings.json")
+           .Build();
+
+            return new SheshTestHelper(configuration.GetConnectionString("Default"));
+        }
+
+        public CoreTestHelper GetCoreTestHelper()
+        {
+            if (_coreTestHelper == null)
+                _coreTestHelper = new CoreTestHelper();
+            return _coreTestHelper;
+        }
+
+        public virtual void CleanAll()
+        {
+            GetSheshTestHelper().CleanDatabase();
+        }
+    }
+    public class BasicTests : IntegrationTestBase
+
+    {
+
         [Theory]
         [InlineData("/api/dynamic/Shesha/Person/Crud/GetAll")]
         //[InlineData("/Index")]
@@ -328,16 +373,18 @@ namespace TestProject1
         //[InlineData("/Contact")]
         public async Task Get_EndpointsReturnSuccessAndCorrectContentType(string url)
         {
+            var coreHelper = GetCoreTestHelper();
+
             var test = GetSheshTestHelper();
             test.CleanDatabase();
 
-            var server = CreateServer();
+            var server = coreHelper.CreateServer();
             // Arrange
             //var client = _factory.CreateClient();
 
             var client = server.CreateClient();
 
-            var token = await LoginWithToken(client, "admin", "123qwe");
+            var token = await coreHelper.LoginWithToken(client, "admin", "123qwe");
 
             client.DefaultRequestHeaders.Authorization =
     new AuthenticationHeaderValue("Bearer", token);
@@ -352,4 +399,117 @@ namespace TestProject1
         }
     }
 
+    public class VehicleTests : IntegrationTestBase
+    {
+
+        public async Task<Guid> AddVehicle(HttpClient client, string reg, string make, string model, int year)
+        {
+            var response = await client.PostAsJsonAsync<VehicleAdd>("/api/dynamic/test.TestProject/Vehicle/Crud/Create", new VehicleAdd { registrationNumber = reg, make = make, model = model, year = year });
+
+            if (response.IsSuccessStatusCode)
+            {
+                string responseStream = await response.Content.ReadAsStringAsync();
+                EntityAddResponse res = await response.Content.ReadFromJsonAsync<EntityAddResponse>();
+                //set the header as the logged in token
+               
+                return res.result.Id;
+            }
+            var errorStream = await response.Content.ReadAsStringAsync();
+
+            throw new Exception($"Create Vehicle failed: {errorStream}");
+        }
+        [Fact]
+        public async Task AddVehicleHappyLine()
+        {
+            this.CleanAll();
+            var coreHelper = GetCoreTestHelper();
+            var server = coreHelper.CreateServer();
+
+            var client = server.CreateClient();
+
+           var token = await coreHelper.LoginWithToken(client, _adminUser, _adminPass);
+            
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            //add a test vechile
+            var id = await AddVehicle(client, "reg123", "BMW", "320i", 2016);
+
+            client.Dispose();
+
+            Assert.NotNull(id);
+            Assert.NotEqual(Guid.Empty, id);
+        }
+
+        [Fact]
+        public async Task AddedVehicles_ShouldFail_ifDataNotValid()
+        {
+            this.CleanAll();
+            var coreHelper = GetCoreTestHelper();
+            var server = coreHelper.CreateServer();
+
+            var client = server.CreateClient();
+
+            var token = await coreHelper.LoginWithToken(client, _adminUser, _adminPass);
+           
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            //add a test vechile
+            var id = await AddVehicle(client, "reg123", "BMW", "320i", 2016);
+            //add another vechile with samne
+            bool passed = false;
+            try
+            {
+                var id2 = await AddVehicle(client, "reg123", "Honda", "civic", 2016);
+                passed = true;
+            }
+            catch (Exception kk)
+            {
+                var expectedMessage = "SQL not available";
+                Assert.Contains(expectedMessage, kk.Message);
+            }
+
+            Assert.False(passed);
+        }
+
+        [Theory]
+        //not allow nulls
+        [InlineData(null, "BMW", "320i", 2016)]
+        [InlineData("123", null, "320i", 2016)]
+        [InlineData("123", "BMW", null, 2016)]
+        //not allow empty
+        [InlineData("", "BMW", "320i", 2016)]
+        [InlineData("123", "", "320i", 2016)]
+        [InlineData("123", "BMW", "", 2016)]
+        public async Task AddVehicle_DataInvalid_ShouldFail(string reg,string make, string model,int year)
+        {
+            this.CleanAll();
+            var coreHelper = GetCoreTestHelper();
+            var server = coreHelper.CreateServer();
+
+            var client = server.CreateClient();
+
+            var token = await coreHelper.LoginWithToken(client, _adminUser, _adminPass);
+
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+           
+    
+            bool passed = false;
+            try
+            {
+                var id = await AddVehicle(client, reg, make, model, year);
+                passed = true;
+            }
+            catch (Exception kk)
+            {
+                var expectedMessage = "SQL not available";
+                Assert.Contains(expectedMessage, kk.Message);
+            }
+
+            Assert.False(passed);
+        }
+    }
 }
