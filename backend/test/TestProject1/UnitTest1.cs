@@ -19,6 +19,10 @@ using Microsoft.SqlServer.Management;
 using Microsoft.SqlServer.Management.Sdk.Sfc;
 using Microsoft.SqlServer.Management.Smo;
 using DocumentFormat.OpenXml.EMMA;
+using Castle.Core.Internal;
+using Xunit;
+using System.Data.Common;
+using Microsoft.SqlServer.Management.Smo.Mail;
 
 
 namespace TestProject1
@@ -335,11 +339,70 @@ namespace TestProject1
         }
     }
 
-    public abstract class IntegrationTestBase
+    public class CustomWebApplicationFactory<TProgram>
+    : WebApplicationFactory<TProgram> where TProgram : class
+    {
+
+        protected override IWebHostBuilder CreateWebHostBuilder()
+        {
+            var configurationValues = new Dictionary<string, string>
+        {
+            { "MyConfigSetting", "Value" }
+        };
+
+            var configuration = new ConfigurationBuilder()
+               .AddInMemoryCollection(configurationValues)
+               .AddJsonFile("appsettings.json", optional: false)
+               .Build();
+
+            //var hostBuilder = WebHost.CreateDefaultBuilder()
+            var hostBuilder = WebHost.CreateDefaultBuilder<Startup>(new string[0])
+                .UseConfiguration(configuration)
+                .CaptureStartupErrors(true)
+
+
+                 .UseSetting("detailedErrors", "true")
+                  .ConfigureAppConfiguration((context, configurationBuilder) =>
+                  {
+
+                      //configurationBuilder
+                      //    //.SetBasePath(Directory.GetCurrentDirectory())
+                      //    //.AddJsonFile("appsettings.Test.json", optional: false)
+                      //    //.AddEnvironmentVariables()
+                      //    .AddConfiguration(configuration);
+
+                      configurationBuilder.Sources.Add(new JsonConfigurationSource
+                      {
+                          Path = "appsettings.json",
+                          Optional = false,
+                          ReloadOnChange = true,
+                          FileProvider = new PhysicalFileProvider(Environment.CurrentDirectory)
+                      });
+
+
+
+
+                  })
+                    .UseEnvironment("Testing")
+                  .UseStartup<Startup>();
+
+            return hostBuilder;
+        }
+       
+    }
+
+    public abstract class IntegrationTestBase : IClassFixture<CustomWebApplicationFactory<Startup>>
     {
         protected string _adminUser = "admin";
         protected string _adminPass = "123qwe";
         protected static CoreTestHelper _coreTestHelper;
+
+        protected readonly CustomWebApplicationFactory<Startup> _factory;
+
+        public IntegrationTestBase(CustomWebApplicationFactory<Startup> factory)
+        {
+            _factory = factory;
+        }
         public SheshTestHelper GetSheshTestHelper()
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -364,6 +427,9 @@ namespace TestProject1
     public class BasicTests : IntegrationTestBase
 
     {
+        public BasicTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
+        {
+        }
 
         [Theory]
         [InlineData("/api/dynamic/Shesha/Person/Crud/GetAll")]
@@ -373,16 +439,16 @@ namespace TestProject1
         //[InlineData("/Contact")]
         public async Task Get_EndpointsReturnSuccessAndCorrectContentType(string url)
         {
+            this.CleanAll();
             var coreHelper = GetCoreTestHelper();
 
-            var test = GetSheshTestHelper();
-            test.CleanDatabase();
+            //var server = coreHelper.CreateServer();
+            //// Arrange
+            ////var client = _factory.CreateClient();
 
-            var server = coreHelper.CreateServer();
-            // Arrange
-            //var client = _factory.CreateClient();
+            //var client = server.CreateClient();
 
-            var client = server.CreateClient();
+            var client = _factory.CreateClient();
 
             var token = await coreHelper.LoginWithToken(client, "admin", "123qwe");
 
@@ -401,7 +467,9 @@ namespace TestProject1
 
     public class VehicleTests : IntegrationTestBase
     {
-
+        public VehicleTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
+        {
+        }
         public async Task<Guid> AddVehicle(HttpClient client, string reg, string make, string model, int year)
         {
             var response = await client.PostAsJsonAsync<VehicleAdd>("/api/dynamic/test.TestProject/Vehicle/Crud/Create", new VehicleAdd { registrationNumber = reg, make = make, model = model, year = year });
@@ -442,7 +510,7 @@ namespace TestProject1
         }
 
         [Fact]
-        public async Task AddedVehicles_ShouldFail_ifDataNotValid()
+        public async Task AddedVehicles_SameRegistration_ShouldFail()
         {
             this.CleanAll();
             var coreHelper = GetCoreTestHelper();
@@ -475,14 +543,18 @@ namespace TestProject1
 
         [Theory]
         //not allow nulls
-        [InlineData(null, "BMW", "320i", 2016)]
-        [InlineData("123", null, "320i", 2016)]
-        [InlineData("123", "BMW", null, 2016)]
+        [InlineData(null, "BMW", "320i", 2016, "'Registration Number' must not be empty")]
+        [InlineData("123", null, "320i", 2016, "'Make' must not be empty")]
+        [InlineData("123", "BMW", null, 2016, "'Model' must not be empty")]
         //not allow empty
-        [InlineData("", "BMW", "320i", 2016)]
-        [InlineData("123", "", "320i", 2016)]
-        [InlineData("123", "BMW", "", 2016)]
-        public async Task AddVehicle_DataInvalid_ShouldFail(string reg,string make, string model,int year)
+        [InlineData("", "BMW", "320i", 2016, "'Registration Number' must be between 3")]
+        [InlineData("123", "", "320i", 2016, "'Make' must be between 2")]
+        [InlineData("123", "BMW", "", 2016, "'Model' must be between 2")]
+        //year must be between 1900 and 2100
+        [InlineData("123", "BMW", "320i", 1899, "'Year' must be between 1900 and 2100")]
+        //year must be between 1900 and 2100
+        [InlineData("123", "BMW", "320i", 2101, "'Year' must be between 1900 and 2100")]
+        public async Task AddVehicle_DataInvalid_ShouldFail(string reg,string make, string model,int year, string expectedError)
         {
             this.CleanAll();
             var coreHelper = GetCoreTestHelper();
@@ -505,8 +577,8 @@ namespace TestProject1
             }
             catch (Exception kk)
             {
-                var expectedMessage = "SQL not available";
-                Assert.Contains(expectedMessage, kk.Message);
+               
+                Assert.Contains(expectedError, kk.Message);
             }
 
             Assert.False(passed);

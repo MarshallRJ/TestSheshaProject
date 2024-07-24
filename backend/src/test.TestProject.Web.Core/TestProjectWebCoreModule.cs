@@ -1,5 +1,6 @@
 using Abp.Modules;
 using Abp.Reflection.Extensions;
+using Abp.FluentValidation;
 using Castle.MicroKernel.Registration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -31,8 +32,8 @@ namespace test.TestProject
         typeof(SheshaImportModule),
         typeof(SheshaClickatellModule),
         typeof(TestProjectModule),
-        typeof(TestProjectApplicationModule)
-        //typeof(AbpFluentValidationModule)
+        typeof(TestProjectApplicationModule),
+        typeof(AbpFluentValidationModule)
      )]
     public class TestProjectWebCoreModule : AbpModule
     {

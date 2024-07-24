@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <PackageReference Include="Abp.AspNetCore.SignalR" Version="9.0.0" />
+    <PackageReference Include="Abp.FluentValidation" Version="9.0.0" />
     <PackageReference Include="Abp.HangFire.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Abp.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Abp.ZeroCore" Version="9.0.0" />

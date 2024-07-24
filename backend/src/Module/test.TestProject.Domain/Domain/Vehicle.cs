@@ -17,8 +17,10 @@ namespace Boxfusion.Membership.Common.Domain.Domain
     {
         public CreateVehcileValidator()
         {
-            RuleFor(x => x.RegistrationNumber).Length(3, 10);
-           // RuleFor(x => x.Price).ExclusiveBetween(0.0f, 999.0f);
+            RuleFor(x => x.RegistrationNumber).NotNull().Length(3, 12);
+            RuleFor(x => x.Make).NotNull().Length(2, 30);
+            RuleFor(x => x.Model).NotNull().Length(2, 30);
+            RuleFor(x => x.Year).ExclusiveBetween(1900, 2100);
         }
     }
 
