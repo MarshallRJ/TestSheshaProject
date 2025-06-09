@@ -1,1 +1,1 @@
-Shesha Framework Starter - v0.30.1
+Shesha Framework Starter - v0.43.5

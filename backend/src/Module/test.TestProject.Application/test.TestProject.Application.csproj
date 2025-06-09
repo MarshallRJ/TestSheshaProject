@@ -30,10 +30,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Shesha.Application" Version="0.35.0" />
-    <PackageReference Include="Shesha.Core" Version="0.35.0" />
-    <PackageReference Include="Shesha.Framework" Version="0.35.0" />
-    <PackageReference Include="Shesha.Web.FormsDesigner" Version="0.35.0" />
+    <PackageReference Include="Shesha.Application" Version="0.43.5" />
+    <PackageReference Include="Shesha.Core" Version="0.43.5" />
+    <PackageReference Include="Shesha.Framework" Version="0.43.5" />
+    <PackageReference Include="Shesha.Web.FormsDesigner" Version="0.43.5" />
     <ProjectReference Include="..\test.TestProject.Domain\test.TestProject.Domain.csproj" />
   </ItemGroup>
 
