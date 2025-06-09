@@ -2,6 +2,7 @@ using Abp.Domain.Repositories;
 using NHibernate.Linq;
 using Shesha.Authorization;
 using Shesha.Domain;
+using Shesha.AutoMapper.Dto;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,6 +50,11 @@ namespace test.TestProject.Common.Authorization
             }
         }
 
+        public Task<bool> IsGrantedAsync(long userId, string permissionName, EntityReferenceDto<string> entity)
+        {
+            return IsGrantedAsync(userId, permissionName);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -58,6 +64,11 @@ namespace test.TestProject.Common.Authorization
         public bool IsGranted(long userId, string permissionName)
         {
             throw new NotImplementedException();
+        }
+
+        public bool IsGranted(long userId, string permissionName, EntityReferenceDto<string> entity)
+        {
+            return IsGranted(userId, permissionName);
         }
 
         /// <summary>
